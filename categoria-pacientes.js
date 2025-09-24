@@ -90,13 +90,159 @@ document.addEventListener('DOMContentLoaded', () => {
       const activeSection = document.getElementById(`${targetSection}-section`);
       if (activeSection) {
         activeSection.classList.add('active');
-        
-        // Las secciones de pacientes están en desarrollo
       }
     });
   });
 
-  // Las funcionalidades de pacientes están en desarrollo
+  // Mostrar por defecto la sección de historial al cargar la página
+  const historialBtn = document.querySelector('button[data-section="historial"]');
+  if(historialBtn) {
+    historialBtn.click();
+  }
+
+
+  // --- INICIO DEL CÓDIGO PARA FORMULARIO Y REGISTRO DE PACIENTES ---
+
+  // Selección de elementos del DOM para el formulario
+  const pesoInput = document.getElementById('peso');
+  const alturaInput = document.getElementById('altura');
+  const imcResultado = document.getElementById('imc-resultado');
+  const form = document.getElementById('patient-form');
+  const errorMessage = document.getElementById('error-message');
+  const historyBody = document.getElementById('history-body');
+
+  // Cargar historial desde localStorage al iniciar la página
+  cargarHistorial();
+
+  // Criterio de Aceptación: El cálculo del IMC debe realizarse automáticamente
+  // Se añade un listener a los campos de peso y altura para calcular en tiempo real.
+  if(pesoInput) pesoInput.addEventListener('input', calcularYMostrarIMC);
+  if(alturaInput) alturaInput.addEventListener('input', calcularYMostrarIMC);
+
+  // Manejo del envío del formulario
+  if(form) {
+    form.addEventListener('submit', (event) => {
+        event.preventDefault(); // Evita que la página se recargue
+        validarYGuardarDatos();
+    });
+  }
+
+  /**
+   * Calcula el IMC basado en los valores de los inputs y lo muestra en la interfaz.
+   * Requerimiento: El sistema calculará automáticamente el IMC.
+   */
+  function calcularYMostrarIMC() {
+      const peso = parseFloat(pesoInput.value);
+      const alturaCm = parseFloat(alturaInput.value);
+
+      if (peso > 0 && alturaCm > 0) {
+          const alturaM = alturaCm / 100;
+          const imc = peso / (alturaM * alturaM);
+          imcResultado.textContent = imc.toFixed(2); // Muestra con 2 decimales
+      } else {
+          imcResultado.textContent = '---';
+      }
+  }
+
+  /**
+   * Valida todos los campos y, si son correctos, guarda el registro.
+   */
+  function validarYGuardarDatos() {
+      const datos = {
+          peso: pesoInput.value.trim(),
+          altura: alturaInput.value.trim(),
+          presion: document.getElementById('presion').value.trim(),
+          glucosa: document.getElementById('glucosa').value.trim(),
+          temperatura: document.getElementById('temperatura').value.trim()
+      };
+
+      let errores = [];
+
+      // Criterio de Aceptación: Validaciones para asegurar que los datos sean coherentes.
+      if (!datos.peso || isNaN(datos.peso) || parseFloat(datos.peso) <= 0) {
+          errores.push('El peso debe ser un número positivo.');
+      }
+      if (!datos.altura || isNaN(datos.altura) || parseFloat(datos.altura) <= 0) {
+          errores.push('La altura debe ser un número positivo.');
+      }
+      if (!datos.glucosa || isNaN(datos.glucosa) || parseFloat(datos.glucosa) < 0) {
+          errores.push('La glucosa debe ser un número válido.');
+      }
+      if (!datos.temperatura || isNaN(datos.temperatura)) {
+          errores.push('La temperatura debe ser un valor numérico.');
+      }
+      if (datos.presion === '') {
+          errores.push('La presión arterial es requerida.');
+      }
+
+      if (errores.length > 0) {
+          // Requerimiento: Si se ingresan valores inválidos, el sistema debe mostrar un mensaje de error.
+          errorMessage.innerHTML = errores.join('<br>');
+          errorMessage.style.display = 'block';
+      } else {
+          // Si no hay errores, se oculta el mensaje y se procede a guardar.
+          errorMessage.style.display = 'none';
+          
+          const registro = {
+              ...datos,
+              imc: imcResultado.textContent,
+              fecha: new Date().toLocaleString('es-MX')
+          };
+          
+          guardarRegistro(registro);
+          actualizarTablaHistorial(registro);
+          form.reset(); // Limpia el formulario
+          imcResultado.textContent = '---';
+          
+          // Usamos tu función de confirmación para una mejor UX
+          mostrarConfirmacion('Registro Exitoso', 'Los datos médicos se han guardado correctamente.');
+      }
+  }
+  
+  /**
+   * Guarda un nuevo registro en el localStorage del navegador.
+   */
+  function guardarRegistro(registro) {
+      const historial = JSON.parse(localStorage.getItem('historialPacientes')) || [];
+      historial.unshift(registro); // Añade el nuevo registro al inicio
+      localStorage.setItem('historialPacientes', JSON.stringify(historial));
+  }
+
+  /**
+   * Carga el historial desde localStorage y lo muestra en la tabla.
+   */
+  function cargarHistorial() {
+      if(!historyBody) return;
+      const historial = JSON.parse(localStorage.getItem('historialPacientes')) || [];
+      historyBody.innerHTML = ''; // Limpia la tabla antes de cargar
+      historial.forEach(registro => actualizarTablaHistorial(registro, false));
+  }
+
+  /**
+   * Añade una nueva fila a la tabla de historial.
+   */
+  function actualizarTablaHistorial(registro, esNuevo = true) {
+      if(!historyBody) return;
+      const fila = document.createElement('tr');
+      fila.innerHTML = `
+          <td>${registro.fecha}</td>
+          <td>${registro.peso}</td>
+          <td>${registro.altura}</td>
+          <td>${registro.imc}</td>
+          <td>${registro.presion}</td>
+          <td>${registro.glucosa}</td>
+          <td>${registro.temperatura}</td>
+      `;
+      
+      if (esNuevo) {
+          historyBody.prepend(fila); // Añade la nueva fila al principio
+      } else {
+          historyBody.appendChild(fila); // Añade al final durante la carga inicial
+      }
+  }
+
+  // --- FIN DEL CÓDIGO PARA FORMULARIO Y REGISTRO DE PACIENTES ---
+
 
   // Función para mostrar confirmaciones
   function mostrarConfirmacion(titulo, mensaje) {
@@ -144,7 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
           color: #374151;
           line-height: 1.5;
         ">${mensaje}</p>
-        <button onclick="this.closest('div[style*=\"position: fixed\"]').remove()" style="
+        <button onclick="this.closest('div[style*=\'position: fixed\']').remove()" style="
           background: linear-gradient(135deg, #7dd3fc, #fef3c7);
           color: #1f2937;
           border: none;

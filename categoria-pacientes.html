@@ -316,6 +316,49 @@
       background-clip: text;
       font-weight: 600;
     }
+    
+    /* INICIO DE ESTILOS CSS AÑADIDOS */
+    .imc-display {
+        text-align: center;
+        margin: 20px 0;
+        padding: 15px;
+        background-color: #eef7ff;
+        border-radius: 12px;
+        border: 2px solid #e5e7eb;
+    }
+    .imc-display h3 { /* Cambiado a h3 para mejor semántica */
+        margin: 0;
+        color: #0056b3;
+        font-weight: 600;
+    }
+    .error-message {
+        color: #d93025;
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        padding: 10px;
+        border-radius: 12px;
+        margin: 20px 0;
+        display: none; /* Oculto por defecto */
+    }
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        overflow: hidden; /* Para que el borde redondeado afecte a la tabla */
+    }
+    .history-table th, .history-table td {
+        border: 1px solid #ddd;
+        padding: 12px;
+        text-align: left;
+    }
+    .history-table thead {
+        background: linear-gradient(135deg, #06b6d4, #0891b2);
+        color: white;
+    }
+    /* FIN DE ESTILOS CSS AÑADIDOS */
+
 
     /* Responsive */
     @media (max-width: 768px) {
@@ -373,7 +416,7 @@
         </li>
         <li>
           <button data-section="nuevo-paciente">
-            🩺 Ingresar nuevo paciente
+            🩺 Ingresar datos de paciente
           </button>
         </li>
         <li>
@@ -386,7 +429,6 @@
 
     <div class="content">
       <div class="content-area">
-        <!-- Sección por defecto -->
         <div id="default-section">
           <h2 class="content-title">Gestión de Pacientes</h2>
           <div class="welcome-message">
@@ -394,25 +436,66 @@
           </div>
         </div>
 
-        <!-- Historial médico -->
         <div id="historial-section" class="form-section">
-          <h2 class="content-title">Historial Médico</h2>
-          <div class="welcome-message">
-            <p>📋 Funcionalidad en desarrollo...</p>
-            <p>Próximamente podrás ver el historial completo de pacientes.</p>
+          <h2 class="content-title">Historial de Registros</h2>
+          <p style="text-align: center; margin-top: -20px; margin-bottom: 30px; color: #6b7280;">
+            Aquí puedes consultar los registros previos del paciente, organizados por fecha.
+          </p>
+          <table id="history-table" class="history-table">
+            <thead>
+                <tr>
+                    <th>Fecha y Hora</th>
+                    <th>Peso (kg)</th>
+                    <th>Altura (cm)</th>
+                    <th>IMC</th>
+                    <th>Presión Art.</th>
+                    <th>Glucosa (mg/dL)</th>
+                    <th>Temp. (°C)</th>
+                </tr>
+            </thead>
+            <tbody id="history-body">
+                </tbody>
+          </table>
           </div>
-        </div>
 
-        <!-- Nuevo paciente -->
         <div id="nuevo-paciente-section" class="form-section">
-          <h2 class="content-title">Ingresar Nuevo Paciente</h2>
-          <div class="welcome-message">
-            <p>🩺 Funcionalidad en desarrollo...</p>
-            <p>Próximamente podrás registrar nuevos pacientes en el sistema.</p>
-          </div>
-        </div>
+          <h2 class="content-title">Registro de Datos Médicos</h2>
+          <form id="patient-form">
+              <div class="form-grid">
+                  <div class="form-group">
+                      <label for="peso">Peso (kg):</label>
+                      <input type="text" id="peso" placeholder="Ej: 70.5" required>
+                  </div>
+                  <div class="form-group">
+                      <label for="altura">Altura (cm):</label>
+                      <input type="text" id="altura" placeholder="Ej: 175" required>
+                  </div>
+                  <div class="form-group">
+                      <label for="presion">Presión Arterial (sistólica/diastólica):</label>
+                      <input type="text" id="presion" placeholder="Ej: 120/80" required>
+                  </div>
+                  <div class="form-group">
+                      <label for="glucosa">Glucosa (mg/dL):</label>
+                      <input type="text" id="glucosa" placeholder="Ej: 99" required>
+                  </div>
+              </div>
+              <div class="form-group full-width">
+                  <label for="temperatura">Temperatura (°C):</label>
+                  <input type="text" id="temperatura" placeholder="Ej: 36.6" required>
+              </div>
 
-        <!-- Citas -->
+              <div class="imc-display">
+                  <h3>Índice de Masa Corporal (IMC): <span id="imc-resultado">---</span></h3>
+              </div>
+              
+              <div id="error-message" class="error-message"></div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Guardar Registro</button>
+              </div>
+          </form>
+          </div>
+
         <div id="citas-section" class="form-section">
           <h2 class="content-title">Gestión de Citas</h2>
           <div class="welcome-message">
